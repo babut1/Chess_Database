@@ -32,7 +32,7 @@ class MatchDAO:
             set_object(match, match_id)
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -81,7 +81,7 @@ class MatchDAO:
 
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -106,7 +106,32 @@ class MatchDAO:
 
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
+            print(error)
+        finally:
+            if conn is not None:
+                self.__connection_provider.free_connection(conn)
+        return matches
+
+    def get_matches_for_round_id(self, round_id):
+        """Returns list of matches associated with provided round"""
+        conn = None
+        matches = []
+        try:
+            conn = self.__connection_provider.get_connection()
+            sql = """
+            SELECT match_id FROM match
+            WHERE round_id = %s;
+            """
+            cur = conn.cursor()
+            cur.execute(sql, [round_id])
+
+            for row in cur:
+                matches.append(self.get_match_by_id(row[0]))
+
+            conn.commit()
+            cur.close()
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -127,7 +152,7 @@ class MatchDAO:
             set_object(None, match.match_id, Match)
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -148,7 +173,7 @@ class MatchDAO:
 
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -198,7 +223,7 @@ class PlayerDAO:
 
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -223,7 +248,7 @@ class PlayerDAO:
 
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -251,11 +276,11 @@ class PlayerDAO:
             nationality = row[4]
             chess_club = row[5]
 
-            player = Player(name, surname, rank, title, nationality, chess_club, player_id)
+            player = Player(name, surname, rank, nationality, title, chess_club, player_id)
             set_object(player, player_id)
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -276,7 +301,7 @@ class PlayerDAO:
             set_object(None, player.player_id, Player)
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -296,7 +321,7 @@ class PlayerDAO:
 
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -313,19 +338,19 @@ class PlayerParamsDAO:
         try:
             conn = self.__connection_provider.get_connection()
             sql = """
-            INSERT INTO player_in_tournament(player_id, tournament_id, current_score, current_buchholz, did_pause)
-            VALUES (%s, %s, %s, %s, %s) RETURNING player_in_tournament_id;
+            INSERT INTO player_in_tournament(player_id, tournament_id, current_score, current_buchholz, did_pause, eliminated)
+            VALUES (%s, %s, %s, %s, %s, %s) RETURNING player_in_tournament_id;
             """
             cur = conn.cursor()
             cur.execute(sql, [player_params.player.player_id, player_params.tournament.tournament_id,
-                        player_params.get_points(), player_params.get_buchholz(), player_params.get_did_pause()])
+                        player_params.get_points(), player_params.get_buchholz(), player_params.get_did_pause(), player_params.eliminated])
 
             player_params_id = cur.fetchone()[0]
             player_params.player_params_id = player_params_id
             set_object(player_params, player_params_id)
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -343,7 +368,7 @@ class PlayerParamsDAO:
         try:
             conn = self.__connection_provider.get_connection()
             sql = """
-            SELECT player_id, tournament_id, current_score, current_buchholz, did_pause
+            SELECT player_id, tournament_id, current_score, current_buchholz, did_pause, eliminated
             FROM player_in_tournament
             WHERE player_in_tournament_id = %s;
             """
@@ -369,10 +394,11 @@ class PlayerParamsDAO:
             player_params.set_buchholz(row[3])
             player_params.set_did_pause(row[4])
             player_params.player_params_id = player_params_id
+            player_params.eliminated = row[5]
 
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -398,7 +424,7 @@ class PlayerParamsDAO:
 
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -446,7 +472,7 @@ class PlayerParamsDAO:
             set_object(None, player_params_id, PlayerParams)
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -458,16 +484,16 @@ class PlayerParamsDAO:
         try:
             conn = self.__connection_provider.get_connection()
             sql = """
-            UPDATE player_in_tournament SET (current_score, current_buchholz, did_pause) =
-            (%s, %s, %s) WHERE player_id = %s AND tournament_id = %s;
+            UPDATE player_in_tournament SET (current_score, current_buchholz, did_pause, eliminated) =
+            (%s, %s, %s, %s) WHERE player_id = %s AND tournament_id = %s;
             """
             cur = conn.cursor()
             cur.execute(sql, [player_params.get_points(), player_params.get_buchholz(), player_params.get_did_pause(),
-                        player_params.player.player_id, player_params.tournament.tournament_id])
+                        player_params.eliminated, player_params.player.player_id, player_params.tournament.tournament_id])
 
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -494,7 +520,7 @@ class TournamentDAO:
             set_object(tournament, tournament_id)
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -529,7 +555,7 @@ class TournamentDAO:
 
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -553,7 +579,33 @@ class TournamentDAO:
 
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
+            print(error)
+        finally:
+            if conn is not None:
+                self.__connection_provider.free_connection(conn)
+        return tournaments
+
+    def get_tournaments_for_player(self, player):
+        conn = None
+        tournaments = []
+        try:
+            conn = self.__connection_provider.get_connection()
+            sql = """
+            SELECT tournament.tournament_id
+            FROM tournament INNER JOIN player_in_tournament pit on tournament.tournament_id = pit.tournament_id
+            INNER JOIN chess_player cp on cp.player_id = pit.player_id
+            WHERE cp.player_id = %s;
+            """
+            cur = conn.cursor()
+            cur.execute(sql, [player.player_id])
+
+            for row in cur:
+                tournaments.append(self.get_tournament_by_id(row[0]))
+
+            conn.commit()
+            cur.close()
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -571,34 +623,25 @@ class TournamentDAO:
             cur = conn.cursor()
             cur.execute(sql, [tournament.tournament_id])
 
+            round_dao = RoundDAO()
+            for round in tournament.rounds_list:
+                round_dao.delete_round(round)
+
+            params_dao = PlayerParamsDAO()
+            for params in tournament.params_list:
+                params_dao.delete_player_params(params)
+
             set_object(None, tournament.tournament_id, Tournament)
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
                 self.__connection_provider.free_connection(conn)
 
     def delete_tournament_by_id(self, tournament_id):
-        conn = None
-        try:
-            conn = self.__connection_provider.get_connection()
-            sql = """
-            DELETE FROM tournament
-            WHERE tournament_id = %s;
-            """
-            cur = conn.cursor()
-            cur.execute(sql, [tournament_id])
-
-            set_object(None, tournament_id, Tournament)
-            conn.commit()
-            cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
-            print(error)
-        finally:
-            if conn is not None:
-                self.__connection_provider.free_connection(conn)
+        self.delete_tournament(self.get_tournament_by_id(tournament_id))
 
     def update_tournament(self, tournament):
         conn = None
@@ -609,15 +652,42 @@ class TournamentDAO:
             (%s, %s, %s) WHERE tournament_id = %s;
             """
             cur = conn.cursor()
-            cur.execute(sql, [tournament.name, tournament.date, tournament.rounds])
+            cur.execute(sql, [tournament.name, tournament.date, tournament.rounds, tournament.tournament_id])
+
+            round_dao = RoundDAO()
+            current_rounds = round_dao.get_rounds_by_tournament_id(tournament.tournament_id)
+            rounds_to_add = [round for round in tournament.rounds_list if round not in current_rounds]
+            rounds_to_update = [round for round in current_rounds if round in tournament.rounds_list]
+
+            for round in rounds_to_update:
+                round_dao.update_round(round)
+
+            for round in rounds_to_add:
+                round.round_id = round_dao.insert_round(round)
+
+            player_params_dao = PlayerParamsDAO()
+            current_params = player_params_dao.get_player_params_for_tournament(tournament)
+
+            params_to_delete = [params for params in current_params if params not in tournament.params_list]
+            params_to_add = [params for params in tournament.params_list if params not in current_params]
+            params_to_update = [params for params in tournament.params_list if params not in params_to_add and params not in params_to_delete]
+
+            for player_params in params_to_delete:
+                player_params_dao.delete_player_params(player_params)
+
+            player_params_dao.insert_player_params_list(params_to_add)
+
+            for params in params_to_update:
+                player_params_dao.update_player_params(params)
 
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
                 self.__connection_provider.free_connection(conn)
+
 
 class RoundDAO:
     def __init__(self):
@@ -634,11 +704,16 @@ class RoundDAO:
                     """
             cur = conn.cursor()
             cur.execute(sql, [round.tournament.tournament_id, round.get_round_no()])
-
+            row = cur.fetchone()
+            round_id = row[0]
+            round.round_id = round_id
             set_object(round, round_id)
             conn.commit()
+            match_dao = MatchDAO()
+            for match in round.matches:
+                match_dao.insert_match(match)
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -663,16 +738,20 @@ class RoundDAO:
             tournament_id = row[0]
             round_no = row[1]
 
-            round = Round(None, round_no, round_id)
+            round = Round(None, round_no, [], round_id)
             set_object(round, round_id)
 
             tournament_dao = TournamentDAO()
             tournament = tournament_dao.get_tournament_by_id(tournament_id)
             round.tournament = tournament
 
+            match_dao = MatchDAO()
+            matches = match_dao.get_matches_for_round_id(round_id)
+            round.matches = matches
+
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -696,7 +775,7 @@ class RoundDAO:
 
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -712,10 +791,15 @@ class RoundDAO:
                     """
             cur = conn.cursor()
             cur.execute(sql, [round.round_id])
+
+            match_dao = MatchDAO()
+            for match in round.matches:
+                match_dao.delete_match(match)
+
             set_object(None, round.round_id, Round)
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
@@ -731,10 +815,13 @@ class RoundDAO:
                     """
             cur = conn.cursor()
             cur.execute(sql, [round.tournament.tournament_id, round.get_round_no(), round.round_id])
+            match_dao = MatchDAO()
+            for match in round.matches:
+                match_dao.update_match(match)
 
             conn.commit()
             cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
+        except psycopg2.DatabaseError as error:
             print(error)
         finally:
             if conn is not None:
