@@ -26,14 +26,27 @@ class Tournament:
             self.params_list.append(PlayerParams(player, self))
         else:
             player_params = [params for params in player_params if params.player.player_id == player.player_id]
-            self.params_list.extend(player_params)
+            if len(player_params) != 0:
+                self.params_list.extend(player_params)
+            else:
+                self.params_list.append(PlayerParams(player, self))
 
     def add_player_params(self, player_params):
         self.params_list.append(player_params)
 
+    def del_player_params(self, player_params):
+        self.params_list.remove(player_params)
+
+    @property
+    def not_eliminated_players(self):
+        return [params.player for params in self.params_list if not params.eliminated]
+
+    def can_generate(self):
+        return len(self.not_eliminated_players) >= 2
+
     def next_round(self):
         next_round = Round(self, len(self.rounds_list) + 1)
-        self.rounds_list += next_round
+        self.rounds_list.append(next_round)
 
     # Function count_scores counts number of points of a player(playerID)
     def count_scores(self, playerID):
