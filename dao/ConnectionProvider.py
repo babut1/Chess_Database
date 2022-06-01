@@ -40,6 +40,7 @@ class ConnectionProvider:
         parser.read('database.ini')
         db = {}
         for param in parser.items('postgresql'):
+            print(param)
             db[param[0]] = param[1]
         return db
 

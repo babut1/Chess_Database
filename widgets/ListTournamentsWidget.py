@@ -79,3 +79,7 @@ class ListTournamentsWidget(qtw.QWidget):
         if current_row != -1:
             id = int(self.ui.tournaments_table.item(current_row, 3).text())
             self.tournament_to_edit.emit(id)
+
+    def refresh(self):
+        tournaments = self.tournament_dao.get_all_tournaments()
+        self.fill_tournaments_table(tournaments)

@@ -3,7 +3,8 @@ from PyQt5 import QtCore as qtc
 from datetime import date
 
 from generated.create_tournament_widget import Ui_CreateTournament
-from dao.DataAccessObjects import PlayerDAO
+from widgets.ListTournamentsWidget import ListTournamentsWidget
+from dao.DataAccessObjects import PlayerDAO, TournamentDAO
 
 
 class CreateTournamentWidget(qtw.QWidget):
@@ -28,7 +29,10 @@ class CreateTournamentWidget(qtw.QWidget):
         self.ui.delete_player_table.setHorizontalScrollBarPolicy(qtc.Qt.ScrollBarAlwaysOff)
 
         self.player_dao = PlayerDAO()
+        self.tournamentDAO = TournamentDAO()
         self.fill_add_player_table(self.player_dao.get_all_players())
+
+        self.list_tournament = ListTournamentsWidget
 
         self.ui.create_tournament_button.clicked.connect(self.add_tournament)
         self.ui.add_player_button.clicked.connect(self.add_player_to_tournament)
@@ -53,6 +57,8 @@ class CreateTournamentWidget(qtw.QWidget):
             for i in range(self.ui.delete_player_table.rowCount()):
                 player_id = int(self.ui.delete_player_table.item(i, 2).text())
                 added_players.append(self.player_dao.get_player_by_id(player_id))
+            # self.list_tournament.refresh()
+
         except ValueError as e:
             if str(e).count("invalid literal for int()") != 0:
                 qtw.QMessageBox.critical(self, 'Error', 'Round count must be a number')

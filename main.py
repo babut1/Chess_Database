@@ -75,6 +75,7 @@ class MainWindow(qtw.QMainWindow):  # Dziedziczy po QMainWindow
         if self.central_widget.indexOf(self.list_tournaments_widget) == -1:
             self.central_widget.addWidget(self.list_tournaments_widget)
         self.central_widget.setCurrentWidget(self.list_tournaments_widget)
+        self.list_tournaments_widget.refresh()
 
     def show_add_player_widget(self):
         if self.add_player_widget is None:

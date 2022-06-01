@@ -3,6 +3,7 @@ from dao.ConnectionProvider import get_connection_provider
 
 
 class DatabaseInitializer:
+  
     table_player = """
     CREATE TABLE IF NOT EXISTS chess_player (
         player_id SERIAL PRIMARY KEY,
@@ -11,7 +12,7 @@ class DatabaseInitializer:
         ranking INT NOT NULL,
         title VARCHAR(10),
         nationality VARCHAR(3) NOT NULL,
-        chess_club VARCHAR(20)
+        chess_club VARCHAR(50)
         );
     """
 
@@ -62,6 +63,27 @@ class DatabaseInitializer:
         FOREIGN KEY (round_id) REFERENCES round(round_id) ON UPDATE CASCADE ON DELETE CASCADE
         );
     """
+    #
+    # table_arbiter = """
+    # CREATE TABLE IF NOT EXISTS arbiter (
+    #     arbiter_id SERIAL PRIMARY KEY,
+    #     firstname VARCHAR(20) NOT NULL,
+    #     lastname VARCHAR(20) NOT NULL,
+    #     nationality VARCHAR(3) NOT NULL,
+    #     );
+    # """
+    #
+    #
+    # table_chess_club = """
+    # CREATE TABLE IF NOT EXISTS chess_club (
+    #     chess_club_id SERIAL PRIMARY KEY,
+    #     chess_club_name VARCHAR(50) NOT NULL,
+    #     address VARCHAR(30) NOT NULL,
+    #     country VARCHAR(3) NOT NULL,
+    #     phone VARCHAR(12) NOT NULL,
+    #     mail VARCHAR(30) NOT NULL,
+    # """
+
 
     def __init__(self):
         self.connection_provider = get_connection_provider()
@@ -75,6 +97,7 @@ class DatabaseInitializer:
             for command in [self.table_player, self.table_tournament, self.table_player_in_tournament,
                             self.round, self.table_match]:
                 cur.execute(command)
+                print("created")
 
             cur.close()
             conn.commit()

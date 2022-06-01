@@ -112,5 +112,6 @@ class EditTournamentWidget(qtw.QWidget):
             qtw.QMessageBox.critical(self, 'Error', 'Can\'t generate next round after choosing a winner')
             return
         self.tournament.next_round()
+        self.tournament_dao.update_tournament(self.tournament)
         self.append_round_to_table(self.tournament.rounds_list[len(self.tournament.rounds_list) - 1])
 
