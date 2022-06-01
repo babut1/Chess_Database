@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
 
+from datetime import datetime
 from generated.list_tournaments_widget import Ui_ListTournaments
 from dao.DataAccessObjects import TournamentDAO
 from widgets.DeleteTournamentDialog import DeleteTournamentDialog
@@ -50,13 +51,14 @@ class ListTournamentsWidget(qtw.QWidget):
             self.ui.tournaments_table.setItem(current_row, 3, qtw.QTableWidgetItem(str(tournament.tournament_id)))
 
     def sort_table(self, text):
+        self.refresh()
         if text == "Name":
             tournaments = self.tournament_dao.get_all_tournaments()
             tournaments = sorted(tournaments, key=lambda tournament: tournament.name, reverse=True)
             self.fill_tournaments_table(tournaments)
         if text == "Date":
             tournaments = self.tournament_dao.get_all_tournaments()
-            tournaments = sorted(tournaments, key=lambda tournament: tournament.date)
+            tournaments = sorted(tournaments, key=lambda tournament: str(tournament.date))
             self.fill_tournaments_table(tournaments)
 
     def choose_tournament(self):
