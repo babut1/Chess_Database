@@ -7,11 +7,13 @@ from widgets.ListTournamentsWidget import ListTournamentsWidget
 from dao.DataAccessObjects import PlayerDAO, TournamentDAO
 
 
+
 class CreateTournamentWidget(qtw.QWidget):
     tournament_added = qtc.pyqtSignal(str, str, int, list)
 
     def __init__(self, parent=None):
         super(CreateTournamentWidget, self).__init__(parent)
+        self.parent = parent
         self.ui = Ui_CreateTournament()
         self.ui.setupUi(self)
 
@@ -83,6 +85,8 @@ class CreateTournamentWidget(qtw.QWidget):
         self.ui.tournament_name_edit.clear()
         self.ui.tournament_date_edit.clear()
         self.ui.tournament_rounds_edit.clear()
+        if self.parent is not None:
+            self.parent.show_tournament_list_widget()
 
     @staticmethod
     def move_player_between_tables(table_from, table_to):

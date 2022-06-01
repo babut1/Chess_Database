@@ -17,6 +17,7 @@ class Tournament:
         self.tournament_id = tournament_id
         self.scores = [[-1] * rounds for _ in range(rounds)]
 
+
     def add_player_params_from_player(self, player):
         if not isinstance(player, Player):
             raise TypeError()
